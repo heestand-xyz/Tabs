@@ -51,7 +51,7 @@ public struct Tabs<Content: View>: View {
             else { return 0 }
             return openIDs.wrappedValue.firstIndex(of: id) ?? 0
         }, set: { index, _ in
-            if let index {                
+            if let index {
                 activeID.wrappedValue = openIDs.wrappedValue[index]
             } else {
                 activeID.wrappedValue = nil
@@ -89,7 +89,7 @@ public struct Tabs<Content: View>: View {
         
         ScrollView(.horizontal, showsIndicators: false) {
             
-            HStack(spacing: 2.0) {
+            HStack(spacing: spacing) {
                 
                 ForEach(Array(0..<count).indices, id: \.self) { index in
                     
