@@ -13,10 +13,12 @@ public struct Tabs<Content: View>: View {
     
     let spacing: CGFloat
     let size: CGSize
-
+    
     let move: (Int, Int) -> ()
     let close: (Int) -> ()
-
+    
+    @StateObject private var tabEngine: TabEngine
+    
     public init(
         count: Int,
         activeIndex: Binding<Int?>,
@@ -33,6 +35,9 @@ public struct Tabs<Content: View>: View {
         self.size = size
         self.move = move
         self.close = close
+        _tabEngine = StateObject(wrappedValue: {
+            TabEngine(axis: .horizontal, length: size.width, spacing: spacing)
+        }())
     }
     
     public init(
@@ -78,12 +83,10 @@ public struct Tabs<Content: View>: View {
                 }()
             }
         }
+        _tabEngine = StateObject(wrappedValue: {
+            TabEngine(axis: .horizontal, length: size.width, spacing: spacing)
+        }())
     }
-    
-    @State private var dragActive: Bool = false
-    @State private var dragIndex: Int?
-    @State private var dragTranslation: CGFloat = 0.0
-    @State private var dragShift: Int = 0
     
     public var body: some View {
         
@@ -98,53 +101,14 @@ public struct Tabs<Content: View>: View {
                     ZStack(alignment: .leading) {
                         
                         Button {
-                            if dragActive { return }
+                            if tabEngine.active { return }
                             activeIndex = index
                         } label: {
                             content(index, isActive, size)
                         }
                         .buttonStyle(Tab())
                         .disabled(isActive)
-                        .simultaneousGesture(
-                            DragGesture(coordinateSpace: .named("tabs"))
-                                .onChanged { value in
-                                    
-                                    if dragIndex == nil {
-                                        dragActive = true
-                                        dragIndex = index
-                                    }
-                                    
-                                    dragTranslation = value.translation.width
-                                    
-                                    let shift = Int(dragTranslation / (size.width + spacing) + (dragTranslation > 0.0 ? 0.5 : -0.5))
-                                    if shift != dragShift {
-                                        withAnimation {
-                                            dragShift = shift
-                                        }
-                                    }
-                                }
-                                .onEnded { _ in
-                                    
-                                    if dragShift != 0 {
-                                        var newIndex = index + dragShift
-                                        newIndex = min(max(newIndex, 0), count - 1)
-                                        if newIndex > index {
-                                            newIndex += 1
-                                        }
-                                        move(index, newIndex)
-                                    }
-                                    
-                                    dragIndex = nil
-                                    dragTranslation = 0.0
-                                    dragShift = 0
-                                    
-                                    DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(1)) {
-                                        guard dragIndex == nil
-                                        else { return }
-                                        dragActive = false
-                                    }
-                                }
-                        )
+                        .tabGesture(at: index, count: count, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
                         
                         Button {
                             close(index)
@@ -156,27 +120,7 @@ public struct Tabs<Content: View>: View {
                         .buttonStyle(.plain)
                     }
                     .frame(width: size.width)
-                    .offset(x: dragIndex == index ? dragTranslation : 0.0)
-                    .offset(x: {
-                       
-                        guard dragActive,
-                              let dragIndex,
-                              dragIndex != index
-                        else { return 0.0 }
-                        
-                        let width: CGFloat = size.width + spacing
-                        
-                        let currentIndex = dragIndex + dragShift
-                        
-                        if index < dragIndex && index >= currentIndex {
-                            return width * CGFloat(min(-dragShift, 1))
-                        } else if index > dragIndex && index <= currentIndex {
-                            return width * CGFloat(max(-dragShift, -1))
-                        }
-                        
-                        return 0.0
-                    }())
-                    .zIndex(dragIndex == index ? 1 : 0)
+                    .tabTransform(at: index, engine: tabEngine)
                 }
             }
         }
