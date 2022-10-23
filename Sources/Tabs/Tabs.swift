@@ -113,11 +113,15 @@ public struct Tabs<Content: View>: View {
                         Button {
                             close(index)
                         } label: {
-                            Image(systemName: "xmark")
-                                .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                .aspectRatio(1.0, contentMode: .fit)
+                            ZStack {
+                                Color.primary.opacity(0.001)
+                                Image(systemName: "xmark")
+                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                    .aspectRatio(1.0, contentMode: .fit)
+                            }
                         }
                         .buttonStyle(.plain)
+                        .aspectRatio(1.0, contentMode: .fit)
                     }
                     .frame(width: size.width)
                     .tabTransform(at: index, engine: tabEngine)
