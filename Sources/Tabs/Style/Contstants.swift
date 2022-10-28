@@ -15,7 +15,7 @@ extension CGSize {
         #if os(macOS)
         return 25
         #else
-        return 35
+        return 30
         #endif
     }())
 }
