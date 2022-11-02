@@ -107,7 +107,7 @@ public struct Tabs<Content: View>: View {
                             content(index, isActive, size)
                         }
                         .buttonStyle(Tab())
-                        .allowsHitTesting(!isActive)
+                        .disabled(isActive)
                         .tabGesture(at: index, count: count, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
                         
                         Button {
