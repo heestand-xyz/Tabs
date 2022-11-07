@@ -24,6 +24,14 @@ public struct Tabs<Content: View>: View {
     
     @StateObject private var tabEngine: TabEngine
     
+    @State private var gesture: TabGesture = {
+        #if os(iOS)
+        return .scroll
+        #else
+        return .auto
+        #endif
+    }()
+    
     public init(
         openIDs: Binding<[UUID]>,
         activeID: Binding<UUID?>,
@@ -63,8 +71,10 @@ public struct Tabs<Content: View>: View {
                             content(Value(id: id, isActive: isActive, width: width, height: height))
                         }
                         .buttonStyle(Tab())
-                        .disabled(isActive)
-                        .tabGesture(at: index, count: openIDs.count, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
+//                        #if os(macOS)
+//                        .disabled(isActive)
+//                        #endif
+                        .tabGesture(at: index, count: openIDs.count, gesture: $gesture, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
                         
                         Button {
                             close(id: id)
@@ -101,6 +111,7 @@ public struct Tabs<Content: View>: View {
                 }
             }
         }
+        .scrollDisabled(!gesture.canScroll)
         .frame(height: height)
         .coordinateSpace(name: "tabs")
     }
