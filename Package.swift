@@ -5,9 +5,8 @@ import PackageDescription
 let package = Package(
     name: "Tabs",
     platforms: [
-        .iOS(.v14),
-        .tvOS(.v14),
-        .macOS(.v11),
+        .iOS(.v15),
+        .macOS(.v12),
     ],
     products: [
         .library(

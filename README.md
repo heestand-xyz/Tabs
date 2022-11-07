@@ -4,7 +4,7 @@ Tabs built in SwiftUI for iOS and macOS.
 
 ![](https://github.com/heestand-xyz/Tabs/blob/main/Assets/Tabs.png?raw=true)
 
-Move and close tabs in UI. Open tabs via binding. Style via closure.
+Move and close tabs in UI. Open tabs via binding. Style via content callback.
 
 ## Swift Package
 
@@ -18,9 +18,9 @@ Move and close tabs in UI. Open tabs via binding. Style via closure.
 var body: some View {
    
     Tabs(openIDs: $openIDs,
-         activeID: $activeID) { id, isActive, size in
+         activeID: $activeID) { value in
         
-        if let thing = things.first(where: { $0.id == id }) {
+        if let thing = things.first(where: { $0.id == value.id }) {
         
             ZStack {
                 
@@ -35,7 +35,7 @@ var body: some View {
                 } icon: {
                     Image(systemName: "circle")
                 }
-                .padding(.horizontal, size.height)
+                .padding(.horizontal, value.height)
             }
             .help(thing.name)
         }
@@ -43,26 +43,15 @@ var body: some View {
 }
 ```
 
-## Constructors
+## Constructor
 
 ```swift
 public init(
     openIDs: Binding<[UUID]>,
     activeID: Binding<UUID?>,
     spacing: CGFloat = .tabSpacing,
-    size: CGSize = .tabSize,
-    @ViewBuilder content: @escaping (UUID, Bool, CGSize) -> Content
-) { ... }
-```
-
-```swift
-public init(
-    count: Int,
-    activeIndex: Binding<Int?>,
-    spacing: CGFloat = .tabSpacing,
-    size: CGSize = .tabSize,
-    @ViewBuilder content: @escaping (Int, Bool, CGSize) -> Content,
-    move: @escaping (Int, Int) -> (),
-    close: @escaping (Int) -> ()
+    width: CGFloat? = nil,
+    height: CGFloat = CGSize.tabSize.height,
+    @ViewBuilder content: @escaping (Tabs.Value) -> Content
 ) { ... }
 ```

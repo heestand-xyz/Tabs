@@ -6,85 +6,40 @@ import SwiftUI
 
 public struct Tabs<Content: View>: View {
     
-    let count: Int
-    let content: (Int, Bool, CGSize) -> Content
+    public struct Value {
+        public let id: UUID
+        public let isActive: Bool
+        public let width: CGFloat?
+        public let height: CGFloat
+    }
     
-    @Binding var activeIndex: Int?
+    let content: (Value) -> Content
+    
+    @Binding var openIDs: [UUID]
+    @Binding var activeID: UUID?
     
     let spacing: CGFloat
-    let size: CGSize
-    
-    let move: (Int, Int) -> ()
-    let close: (Int) -> ()
+    let width: CGFloat?
+    let height: CGFloat
     
     @StateObject private var tabEngine: TabEngine
-    
-    public init(
-        count: Int,
-        activeIndex: Binding<Int?>,
-        spacing: CGFloat = .tabSpacing,
-        size: CGSize = .tabSize,
-        @ViewBuilder content: @escaping (Int, Bool, CGSize) -> Content,
-        move: @escaping (Int, Int) -> (),
-        close: @escaping (Int) -> ()
-    ) {
-        self.count = count
-        self.content = content
-        _activeIndex = activeIndex
-        self.spacing = spacing
-        self.size = size
-        self.move = move
-        self.close = close
-        _tabEngine = StateObject(wrappedValue: {
-            TabEngine(axis: .horizontal, length: size.width, spacing: spacing)
-        }())
-    }
     
     public init(
         openIDs: Binding<[UUID]>,
         activeID: Binding<UUID?>,
         spacing: CGFloat = .tabSpacing,
-        size: CGSize = .tabSize,
-        @ViewBuilder content: @escaping (UUID, Bool, CGSize) -> Content
+        width: CGFloat? = nil,
+        height: CGFloat = CGSize.tabSize.height,
+        @ViewBuilder content: @escaping (Value) -> Content
     ) {
-        self.count = openIDs.wrappedValue.count
-        self.content = { index, isActive, size in
-            content(openIDs.wrappedValue[index], isActive, size)
-        }
-        _activeIndex = Binding(get: {
-            guard let id = activeID.wrappedValue
-            else { return 0 }
-            return openIDs.wrappedValue.firstIndex(of: id) ?? 0
-        }, set: { index, _ in
-            if let index {
-                activeID.wrappedValue = openIDs.wrappedValue[index]
-            } else {
-                activeID.wrappedValue = nil
-            }
-        })
+        self.content = content
+        _openIDs = openIDs
+        _activeID = activeID
         self.spacing = spacing
-        self.size = size
-        self.move = { index, toIndex in
-            openIDs.wrappedValue.move(fromOffsets: [index], toOffset: toIndex)
-        }
-        self.close = { index in
-            
-            let id: UUID = openIDs.wrappedValue[index]
-            
-            openIDs.wrappedValue.remove(at: index)
-            
-            if id == activeID.wrappedValue {
-                activeID.wrappedValue = {
-                    if openIDs.wrappedValue.indices.contains(index) {
-                        return openIDs.wrappedValue[index]
-                    } else {
-                        return openIDs.wrappedValue.last
-                    }
-                }()
-            }
-        }
+        self.width = width
+        self.height = height
         _tabEngine = StateObject(wrappedValue: {
-            TabEngine(axis: .horizontal, length: size.width, spacing: spacing)
+            TabEngine(axis: .horizontal, length: width, spacing: spacing)
         }())
     }
     
@@ -94,24 +49,25 @@ public struct Tabs<Content: View>: View {
             
             HStack(spacing: spacing) {
                 
-                ForEach(Array(0..<count).indices, id: \.self) { index in
+                ForEach(openIDs, id: \.self) { id in
                     
-                    let isActive = activeIndex == index
+                    let index = openIDs.firstIndex(of: id) ?? 0
+                    let isActive = activeID == id
                         
                     ZStack(alignment: .leading) {
                         
                         Button {
                             if tabEngine.active { return }
-                            activeIndex = index
+                            activeID = id
                         } label: {
-                            content(index, isActive, size)
+                            content(Value(id: id, isActive: isActive, width: width, height: height))
                         }
                         .buttonStyle(Tab())
                         .disabled(isActive)
-                        .tabGesture(at: index, count: count, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
+                        .tabGesture(at: index, count: openIDs.count, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
                         
                         Button {
-                            close(index)
+                            close(id: id)
                         } label: {
                             ZStack {
                                 Color.primary.opacity(0.001)
@@ -123,26 +79,50 @@ public struct Tabs<Content: View>: View {
                         .buttonStyle(.plain)
                         .aspectRatio(1.0, contentMode: .fit)
                     }
-                    .frame(width: size.width)
+                    .frame(width: width)
+                    .background {
+                        GeometryReader { geometry in
+                            Color.clear
+                                .onAppear {
+                                    guard width == nil else { return }
+                                    tabEngine.dynamicLengths[index] = geometry.size.width
+                                }
+                                .onChange(of: geometry.size) { size in
+                                    guard width == nil else { return }
+                                    tabEngine.dynamicLengths[index] = size.width
+                                }
+                                .onDisappear {
+                                    guard width == nil else { return }
+                                    tabEngine.dynamicLengths.removeValue(forKey: index)
+                                }
+                        }
+                    }
                     .tabTransform(at: index, engine: tabEngine)
                 }
             }
         }
-        .frame(height: size.height)
+        .frame(height: height)
         .coordinateSpace(name: "tabs")
     }
-}
-
-struct Tabs_Previews: PreviewProvider {
-    static var previews: some View {
-        Tabs(count: 3, activeIndex: .constant(0)) { index, isActive, _ in
-            ZStack {
-                isActive ? Color.accentColor : Color.primary.opacity(0.1)
-                Text("Tab \(index + 1)")
-            }
-        } move: { _, _ in
-        } close: { _ in
+    
+    private func move(from index: Int, to toIndex: Int) {
+        openIDs.move(fromOffsets: [index], toOffset: toIndex)
+    }
+    
+    private func close(id: UUID) {
+        
+        let index = openIDs.firstIndex(of: id) ?? 0
+        
+        openIDs.removeAll(where: { $0 == id })
+        
+        if id == activeID {
+            activeID = {
+                if openIDs.indices.contains(index) {
+                    return openIDs[index]
+                } else {
+                    return openIDs.last
+                }
+            }()
         }
-        .previewLayout(.fixed(width: 700, height: 30))
     }
 }
