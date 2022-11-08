@@ -9,24 +9,21 @@ import SwiftUI
 
 extension View {
     
-    public func tab(at index: Int, count: Int, gesture: Binding<TabGesture> = .constant(.auto), engine: TabEngine, coordinateSpace: CoordinateSpace, move: @escaping (Int, Int) -> ()) -> some View {
+    public func tab(id: UUID, ids: [UUID], gesture: Binding<TabGesture> = .constant(.auto), engine: TabEngine, coordinateSpace: CoordinateSpace, move: @escaping (Int, Int) -> ()) -> some View {
         self
-            .tabGesture(at: index, count: count, gesture: gesture, engine: engine, coordinateSpace: coordinateSpace, move: move)
-            .tabTransform(at: index, engine: engine)
+            .tabGesture(id: id, ids: ids, gesture: gesture, engine: engine, coordinateSpace: coordinateSpace, move: move)
+            .tabTransform(id: id, engine: engine)
     }
     
-    public func tabGesture(at index: Int, count: Int, gesture: Binding<TabGesture> = .constant(.auto), engine: TabEngine, coordinateSpace: CoordinateSpace, move: @escaping (Int, Int) -> ()) -> some View {
+    public func tabGesture(id: UUID, ids: [UUID], gesture: Binding<TabGesture> = .constant(.auto), engine: TabEngine, coordinateSpace: CoordinateSpace, move: @escaping (Int, Int) -> ()) -> some View {
         self
             #if os(iOS)
             .onLongPressGesture {
-                print("------------->>>")
                 gesture.wrappedValue = .drag
             } onPressingChanged: { change in
-                print("------------->", "change:", change)
                 if change {
                     gesture.wrappedValue = .potentialDrag
                     Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
-                        print("-------------)))", "gesture:", gesture.wrappedValue)
                         guard gesture.wrappedValue == .potentialDrag
                         else { return }
                         gesture.wrappedValue = .drag
@@ -43,21 +40,20 @@ extension View {
                         guard gesture.wrappedValue.canDrag
                         else { return }
                         #endif
-                        engine.onChanged(index: index, value: value)
+                        engine.onChanged(id: id, ids: ids, value: value)
                     }
                     .onEnded { _ in
-                        engine.onEnded(index: index, count: count, move: move)
+                        engine.onEnded(id: id, ids: ids, move: move)
                         #if os(iOS)
-                        print("-------------<<<")
                         gesture.wrappedValue = .scroll
                         #endif
                     }
             )
     }
     
-    public func tabTransform(at index: Int, engine: TabEngine) -> some View {
-        self.offset(x: engine.axis == .horizontal ? engine.offset(at: index) : 0.0,
-                    y: engine.axis == .vertical ? engine.offset(at: index) : 0.0)
-            .zIndex(engine.index == index ? 1 : 0)
+    public func tabTransform(id: UUID, engine: TabEngine) -> some View {
+        self.offset(x: engine.axis == .horizontal ? engine.offset(id: id) : 0.0,
+                    y: engine.axis == .vertical ? engine.offset(id: id) : 0.0)
+            .zIndex(engine.id == id ? 1 : 0)
     }
 }

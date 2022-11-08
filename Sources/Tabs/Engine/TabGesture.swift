@@ -7,13 +7,13 @@ public enum TabGesture {
 }
 
 extension TabGesture {
-    var canDrag: Bool {
+    public var canDrag: Bool {
         [.auto, .drag].contains(self)
     }
 }
 
 extension TabGesture {
-    var canScroll: Bool {
+    public var canScroll: Bool {
         [.auto, .scroll, .potentialDrag].contains(self)
     }
 }

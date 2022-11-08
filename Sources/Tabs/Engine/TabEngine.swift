@@ -12,11 +12,16 @@ public class TabEngine: ObservableObject {
     let spacing: CGFloat
 
     @Published var active: Bool = false
-    @Published var index: Int?
+    @Published var id: UUID?
+    @Published var ids: [UUID] = []
+    var index: Int? {
+        guard let id else { return nil }
+        return ids.firstIndex(of: id)
+    }
     @Published private var translation: CGFloat = 0.0
     @Published private var shift: Int = 0
     
-    @Published public var dynamicLengths: [Int: CGFloat] = [:]
+    @Published public var dynamicLengths: [UUID: CGFloat] = [:]
     
     public init(axis: Axis, length: CGFloat? = nil, spacing: CGFloat = 0.0) {
         self.axis = axis
@@ -25,7 +30,13 @@ public class TabEngine: ObservableObject {
     }
     
     func length(at index: Int) -> CGFloat? {
-        staticLength ?? dynamicLengths[index]
+        if let staticLength {
+            return staticLength
+        }
+        guard ids.indices.contains(index)
+        else { return nil }
+        let id: UUID = ids[index]
+        return dynamicLengths[id]
     }
     
     func lengths(below index: Int) -> CGFloat? {
@@ -59,7 +70,9 @@ public class TabEngine: ObservableObject {
         return lengths + length / 2
     }
    
-    func offset(at index: Int) -> CGFloat {
+    func offset(id: UUID) -> CGFloat {
+        
+        let index = ids.firstIndex(of: id) ?? 0
         
         guard active,
               let tabIndex = self.index
@@ -86,11 +99,15 @@ public class TabEngine: ObservableObject {
         }
     }
     
-    func onChanged(index: Int, value: DragGesture.Value) {
-       
+    func onChanged(id: UUID, ids: [UUID], value: DragGesture.Value) {
+        
+        let index = ids.firstIndex(of: id) ?? 0
+        let count = ids.count
+        
         if self.index == nil {
             self.active = true
-            self.index = index
+            self.id = id
+            self.ids = ids
         }
         
         switch axis {
@@ -124,7 +141,10 @@ public class TabEngine: ObservableObject {
         }
     }
     
-    func onEnded(index: Int, count: Int, move: (Int, Int) -> ()) {
+    func onEnded(id: UUID, ids: [UUID], move: (Int, Int) -> ()) {
+        
+        let index = ids.firstIndex(of: id) ?? 0
+        let count = ids.count
         
         if shift != 0 {
             var newIndex = index + shift
@@ -135,7 +155,8 @@ public class TabEngine: ObservableObject {
             move(index, newIndex)
         }
         
-        self.index = nil
+        self.id = nil
+        self.ids = []
         self.translation = 0.0
         self.shift = 0
         

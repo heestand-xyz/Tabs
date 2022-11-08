@@ -74,7 +74,7 @@ public struct Tabs<Content: View>: View {
 //                        #if os(macOS)
 //                        .disabled(isActive)
 //                        #endif
-                        .tabGesture(at: index, count: openIDs.count, gesture: $gesture, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
+                        .tabGesture(id: id, ids: openIDs, gesture: $gesture, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
                         
                         Button {
                             close(id: id)
@@ -95,19 +95,19 @@ public struct Tabs<Content: View>: View {
                             Color.clear
                                 .onAppear {
                                     guard width == nil else { return }
-                                    tabEngine.dynamicLengths[index] = geometry.size.width
+                                    tabEngine.dynamicLengths[id] = geometry.size.width
                                 }
                                 .onChange(of: geometry.size) { size in
                                     guard width == nil else { return }
-                                    tabEngine.dynamicLengths[index] = size.width
+                                    tabEngine.dynamicLengths[id] = size.width
                                 }
                                 .onDisappear {
                                     guard width == nil else { return }
-                                    tabEngine.dynamicLengths.removeValue(forKey: index)
+                                    tabEngine.dynamicLengths.removeValue(forKey: id)
                                 }
                         }
                     }
-                    .tabTransform(at: index, engine: tabEngine)
+                    .tabTransform(id: id, engine: tabEngine)
                 }
             }
         }
