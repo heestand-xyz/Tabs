@@ -102,7 +102,6 @@ public class TabEngine: ObservableObject {
     func onChanged(id: UUID, ids: [UUID], value: DragGesture.Value) {
         
         let index = ids.firstIndex(of: id) ?? 0
-        let count = ids.count
         
         if self.index == nil {
             self.active = true

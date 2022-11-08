@@ -59,7 +59,6 @@ public struct Tabs<Content: View>: View {
                 
                 ForEach(openIDs, id: \.self) { id in
                     
-                    let index = openIDs.firstIndex(of: id) ?? 0
                     let isActive = activeID == id
                         
                     ZStack(alignment: .leading) {
