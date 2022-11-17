@@ -7,6 +7,16 @@ public enum TabGesture {
 }
 
 extension TabGesture {
+    public static var `default`: TabGesture {
+        #if os(iOS)
+        return .scroll
+        #else
+        return .auto
+        #endif
+    }
+}
+
+extension TabGesture {
     public var canDrag: Bool {
         [.auto, .drag].contains(self)
     }
