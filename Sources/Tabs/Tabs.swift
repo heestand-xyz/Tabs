@@ -6,14 +6,7 @@ import SwiftUI
 
 public struct Tabs<Content: View>: View {
     
-    public struct Value {
-        public let id: UUID
-        public let isActive: Bool
-        public let width: CGFloat?
-        public let height: CGFloat
-    }
-    
-    let content: (Value) -> Content
+    let content: (TabValue) -> Content
     
     @Binding var openIDs: [UUID]
     @Binding var activeID: UUID?
@@ -38,7 +31,7 @@ public struct Tabs<Content: View>: View {
         spacing: CGFloat = .tabSpacing,
         width: CGFloat? = nil,
         height: CGFloat = CGSize.tabSize.height,
-        @ViewBuilder content: @escaping (Value) -> Content
+        @ViewBuilder content: @escaping (TabValue) -> Content
     ) {
         self.content = content
         _openIDs = openIDs
@@ -67,7 +60,7 @@ public struct Tabs<Content: View>: View {
                             if tabEngine.active { return }
                             activeID = id
                         } label: {
-                            content(Value(id: id, isActive: isActive, width: width, height: height))
+                            content(TabValue(id: id, isActive: isActive, width: width, height: height))
                         }
                         .buttonStyle(Tab())
 //                        #if os(macOS)
