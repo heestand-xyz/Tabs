@@ -7,6 +7,7 @@ import CoreGraphics
 extension CGFloat {
     
     public static let tabSpacing: CGFloat = 2.0
+    public static let tabPadding: CGFloat = 8.0
 }
 
 extension CGSize {

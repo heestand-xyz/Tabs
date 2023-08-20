@@ -4,9 +4,10 @@
 
 import SwiftUI
 
-public struct Tabs<Content: View>: View {
+public struct Tabs<Content: View, Xmark: View>: View {
     
     let content: (TabValue) -> Content
+    let xmark: (TabValue) -> Xmark
     
     @Binding var openIDs: [UUID]
     @Binding var activeID: UUID?
@@ -14,7 +15,7 @@ public struct Tabs<Content: View>: View {
     let spacing: CGFloat
     let width: CGFloat?
     let height: CGFloat
-    
+        
     @StateObject private var tabEngine: TabEngine
     
     @State private var gesture: TabGesture = {
@@ -31,9 +32,12 @@ public struct Tabs<Content: View>: View {
         spacing: CGFloat = .tabSpacing,
         width: CGFloat? = nil,
         height: CGFloat = CGSize.tabSize.height,
-        @ViewBuilder content: @escaping (TabValue) -> Content
+        xmarkColor: Color = .primary,
+        @ViewBuilder content: @escaping (TabValue) -> Content,
+        @ViewBuilder xmark: @escaping (TabValue) -> Xmark
     ) {
         self.content = content
+        self.xmark = xmark
         _openIDs = openIDs
         _activeID = activeID
         self.spacing = spacing
@@ -52,7 +56,10 @@ public struct Tabs<Content: View>: View {
                 
                 ForEach(openIDs, id: \.self) { id in
                     
-                    let isActive = activeID == id
+                    let isActive: Bool = activeID == id
+                    let isFirst: Bool = openIDs.first == id
+                    
+                    let tabValue = TabValue(id: id, isActive: isActive, width: width, height: height - .tabPadding * 2)
                         
                     ZStack(alignment: .leading) {
                         
@@ -60,9 +67,9 @@ public struct Tabs<Content: View>: View {
                             if tabEngine.active { return }
                             activeID = id
                         } label: {
-                            content(TabValue(id: id, isActive: isActive, width: width, height: height))
+                            content(tabValue)
                         }
-                        .buttonStyle(Tab())
+                        .buttonStyle(Tab(isFirst: isFirst))
 //                        #if os(macOS)
 //                        .disabled(isActive)
 //                        #endif
@@ -71,15 +78,13 @@ public struct Tabs<Content: View>: View {
                         Button {
                             close(id: id)
                         } label: {
-                            ZStack {
-                                Color.primary.opacity(0.001)
-                                Image(systemName: "xmark")
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                    .aspectRatio(1.0, contentMode: .fit)
-                            }
+                            xmark(tabValue)
+                                .clipShape(.rect(cornerRadius: 16))
                         }
                         .buttonStyle(.plain)
                         .aspectRatio(1.0, contentMode: .fit)
+                        .padding(.vertical, .tabPadding)
+                        .padding(.leading, isFirst ? .tabPadding : .tabPadding / 2)
                     }
                     .frame(width: width)
                     .background {
