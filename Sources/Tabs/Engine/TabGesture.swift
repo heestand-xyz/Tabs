@@ -8,7 +8,7 @@ public enum TabGesture {
 
 extension TabGesture {
     public static var `default`: TabGesture {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return .scroll
         #else
         return .auto

@@ -19,7 +19,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
     @StateObject private var tabEngine: TabEngine
     
     @State private var gesture: TabGesture = {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         return .scroll
         #else
         return .auto

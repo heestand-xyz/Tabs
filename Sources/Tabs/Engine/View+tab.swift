@@ -17,7 +17,7 @@ extension View {
     
     public func tabGesture(id: UUID, ids: [UUID], gesture: Binding<TabGesture> = .constant(.auto), engine: TabEngine, coordinateSpace: CoordinateSpace, move: @escaping (Int, Int) -> ()) -> some View {
         self
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             .onLongPressGesture {
                 gesture.wrappedValue = .drag
             } onPressingChanged: { change in
@@ -36,7 +36,7 @@ extension View {
             .simultaneousGesture(
                 DragGesture(coordinateSpace: coordinateSpace)
                     .onChanged { value in
-                        #if os(iOS)
+                        #if os(iOS) || os(visionOS)
                         guard gesture.wrappedValue.canDrag
                         else { return }
                         #endif
@@ -44,7 +44,7 @@ extension View {
                     }
                     .onEnded { _ in
                         engine.onEnded(id: id, ids: ids, move: move)
-                        #if os(iOS)
+                        #if os(iOS) || os(visionOS)
                         gesture.wrappedValue = .scroll
                         #endif
                     }
