@@ -81,7 +81,9 @@ public struct Tabs<Content: View, Xmark: View>: View {
                             xmark(tabValue)
                                 .clipShape(.rect(cornerRadius: 16))
                         }
+#if !os(visionOS)
                         .buttonStyle(.plain)
+#endif
                         .aspectRatio(1.0, contentMode: .fit)
                         .padding(.vertical, .tabPadding)
                         .padding(.leading, isFirst ? .tabPadding : .tabPadding / 2)
