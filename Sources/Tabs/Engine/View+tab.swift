@@ -27,6 +27,7 @@ extension View {
                         guard gesture.wrappedValue == .potentialDrag
                         else { return }
                         gesture.wrappedValue = .drag
+                        engine.onChanged(id: id, ids: ids, value: nil)
                     }
                 } else {
                     gesture.wrappedValue = .scroll

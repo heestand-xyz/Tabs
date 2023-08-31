@@ -56,10 +56,16 @@ public struct Tabs<Content: View, Xmark: View>: View {
                 
                 ForEach(openIDs, id: \.self) { id in
                     
-                    let isActive: Bool = activeID == id
                     let isFirst: Bool = openIDs.first == id
+                    let isActive: Bool = activeID == id
+                    let isMoving: Bool = tabEngine.id == id
                     
-                    let tabValue = TabValue(id: id, isActive: isActive, width: width, height: height - .tabPadding * 2)
+                    let tabValue = TabValue(
+                        id: id, 
+                        isActive: isActive,
+                        isMoving: isMoving,
+                        width: width,
+                        height: height - .tabPadding * 2)
                         
                     ZStack(alignment: .leading) {
                         

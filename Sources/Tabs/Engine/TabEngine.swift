@@ -13,6 +13,7 @@ public class TabEngine: ObservableObject {
 
     @Published var active: Bool = false
     @Published var id: UUID?
+    public var draggingID: UUID? { id }
     @Published var ids: [UUID] = []
     var index: Int? {
         guard let id else { return nil }
@@ -99,7 +100,7 @@ public class TabEngine: ObservableObject {
         }
     }
     
-    func onChanged(id: UUID, ids: [UUID], value: DragGesture.Value) {
+    func onChanged(id: UUID, ids: [UUID], value: DragGesture.Value?) {
         
         let index = ids.firstIndex(of: id) ?? 0
         
@@ -108,6 +109,8 @@ public class TabEngine: ObservableObject {
             self.id = id
             self.ids = ids
         }
+        
+        guard let value else { return }
         
         switch axis {
         case .horizontal:
