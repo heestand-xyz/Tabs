@@ -65,7 +65,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
                         isActive: isActive,
                         isMoving: isMoving,
                         width: width,
-                        height: height - .tabPadding * 2)
+                        height: height/* - .tabPadding * 2*/)
                         
                     ZStack(alignment: .leading) {
                         
