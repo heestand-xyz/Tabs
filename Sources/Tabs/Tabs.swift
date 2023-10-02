@@ -76,9 +76,6 @@ public struct Tabs<Content: View, Xmark: View>: View {
                             content(tabValue)
                         }
                         .buttonStyle(Tab(isFirst: isFirst))
-//                        #if os(macOS)
-//                        .disabled(isActive)
-//                        #endif
                         .tabGesture(id: id, ids: openIDs, gesture: $gesture, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
                         
                         Button {
