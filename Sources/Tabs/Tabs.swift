@@ -4,7 +4,6 @@
 
 import SwiftUI
 
-@available(iOS 16.0, macOS 13.0, *)
 public struct Tabs<Content: View, Xmark: View>: View {
     
     let content: (TabValue) -> Content
