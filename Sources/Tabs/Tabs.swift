@@ -14,7 +14,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
     @Binding var activeID: UUID?
 
     let showClose: Bool
-    let closeConfirmation: (UUID) -> Bool
+    let closeConfirmation: (UUID) async -> Bool
     
     let spacing: CGFloat
     let width: CGFloat?
@@ -34,7 +34,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
         openIDs: Binding<[UUID]>,
         activeID: Binding<UUID?>,
         showClose: Bool = true,
-        closeConfirmation: @escaping (UUID) -> Bool = { _ in true },
+        closeConfirmation: @escaping (UUID) async -> Bool = { _ in true },
         spacing: CGFloat = .tabSpacing,
         width: CGFloat? = nil,
         height: CGFloat = CGSize.tabSize.height,
@@ -73,7 +73,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
                         isActive: isActive,
                         isMoving: isMoving,
                         width: width,
-                        height: height/* - .tabPadding * 2*/)
+                        height: height)
                         
                     ZStack(alignment: .leading) {
                         
@@ -89,18 +89,17 @@ public struct Tabs<Content: View, Xmark: View>: View {
                         if showClose {
                             
                             Button {
-                                closeConfirmation { canClose in
-                                    guard canClose else { return }
-                                    close(id: id)
+                                Task {
+                                    guard await closeConfirmation(id) else { return }
+                                    await MainActor.run {
+                                        close(id: id)
+                                    }
                                 }
                             } label: {
                                 xmark(tabValue)
-                                    .clipShape(.rect(cornerRadius: 16))
                             }
                             .buttonStyle(.plain)
                             .aspectRatio(1.0, contentMode: .fit)
-                            .padding(.vertical, .tabPadding)
-                            .padding(.leading, isFirst ? .tabPadding : .tabPadding / 2)
                         }
                     }
                     .frame(width: width)
