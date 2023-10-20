@@ -57,73 +57,89 @@ public struct Tabs<Content: View, Xmark: View>: View {
     
     public var body: some View {
         
-        ScrollView(.horizontal, showsIndicators: false) {
+        ScrollViewReader { proxy in
             
-            HStack(spacing: spacing) {
+            ScrollView(.horizontal, showsIndicators: false) {
                 
-                ForEach(openIDs, id: \.self) { id in
+                HStack(spacing: spacing) {
                     
-                    let isFirst: Bool = openIDs.first == id
-                    let isActive: Bool = activeID == id
-                    let isMoving: Bool = tabEngine.id == id
-                    
-                    let tabValue = TabValue(
-                        id: id, 
-                        isActive: isActive,
-                        isMoving: isMoving,
-                        width: width,
-                        height: height)
+                    ForEach(openIDs, id: \.self) { id in
                         
-                    ZStack(alignment: .leading) {
+                        let index: Int = openIDs.firstIndex(of: id) ?? 0
+                        let isFirst: Bool = openIDs.first == id
+                        let isActive: Bool = activeID == id
+                        let isMoving: Bool = tabEngine.id == id
                         
-                        Button {
-                            if tabEngine.active { return }
-                            activeID = id
-                        } label: {
-                            content(tabValue)
-                        }
-                        .buttonStyle(Tab(isFirst: isFirst))
-                        .tabGesture(id: id, ids: openIDs, gesture: $gesture, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
+                        let tabValue = TabValue(
+                            id: id,
+                            index: index,
+                            isActive: isActive,
+                            isMoving: isMoving,
+                            width: width,
+                            height: height)
                         
-                        if showClose {
+                        ZStack(alignment: .leading) {
                             
                             Button {
-                                Task {
-                                    guard await closeConfirmation(id) else { return }
-                                    await MainActor.run {
-                                        close(id: id)
-                                    }
-                                }
+                                if tabEngine.active { return }
+                                activeID = id
                             } label: {
-                                xmark(tabValue)
+                                content(tabValue)
                             }
-                            .buttonStyle(.plain)
-                            .aspectRatio(1.0, contentMode: .fit)
+                            .buttonStyle(Tab(isFirst: isFirst))
+                            .tabGesture(id: id, ids: openIDs, gesture: $gesture, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
+                            
+                            if showClose {
+                                
+                                Button {
+                                    Task {
+                                        guard await closeConfirmation(id) else { return }
+                                        await MainActor.run {
+                                            close(id: id)
+                                        }
+                                    }
+                                } label: {
+                                    xmark(tabValue)
+                                }
+                                .buttonStyle(.plain)
+                                .aspectRatio(1.0, contentMode: .fit)
+                            }
                         }
-                    }
-                    .frame(width: width)
-                    .background {
-                        GeometryReader { geometry in
-                            Color.clear
-                                .onAppear {
-                                    guard width == nil else { return }
-                                    tabEngine.dynamicLengths[id] = geometry.size.width
-                                }
-                                .onChange(of: geometry.size) { size in
-                                    guard width == nil else { return }
-                                    tabEngine.dynamicLengths[id] = size.width
-                                }
-                                .onDisappear {
-                                    guard width == nil else { return }
-                                    tabEngine.dynamicLengths.removeValue(forKey: id)
-                                }
+                        .frame(width: width)
+                        .background {
+                            GeometryReader { geometry in
+                                Color.clear
+                                    .onAppear {
+                                        guard width == nil else { return }
+                                        tabEngine.dynamicLengths[id] = geometry.size.width
+                                    }
+                                    .onChange(of: geometry.size) { size in
+                                        guard width == nil else { return }
+                                        tabEngine.dynamicLengths[id] = size.width
+                                    }
+                                    .onDisappear {
+                                        guard width == nil else { return }
+                                        tabEngine.dynamicLengths.removeValue(forKey: id)
+                                    }
+                            }
                         }
+                        .tabTransform(id: id, engine: tabEngine)
+                        .id("tab-\(id.uuidString)")
                     }
-                    .tabTransform(id: id, engine: tabEngine)
                 }
             }
+            .scrollDisabled(!gesture.canScroll)
+            .onAppear {
+                guard gesture.canScroll else { return }
+                guard let id: UUID = activeID else { return }
+                proxy.scrollTo("tab-\(id.uuidString)")
+            }
+//            .onChange(of: activeID) { newID in
+//                guard gesture.canScroll else { return }
+//                guard let id: UUID = newID else { return }
+//                proxy.scrollTo("tab-\(id.uuidString)")
+//            }
         }
-        .scrollDisabled(!gesture.canScroll)
         .frame(height: height)
         .coordinateSpace(name: "tabs")
     }

@@ -9,6 +9,7 @@ import Foundation
 
 public struct TabValue {
     public let id: UUID
+    public let index: Int
     public let isActive: Bool
     public let isMoving: Bool
     public let width: CGFloat?
