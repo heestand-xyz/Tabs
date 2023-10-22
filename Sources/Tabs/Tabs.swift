@@ -39,7 +39,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
         height: CGFloat = CGSize.tabSize.height,
         xmarkColor: Color = .primary,
         @ViewBuilder content: @escaping (TabValue) -> Content,
-        @ViewBuilder xmark: @escaping (TabValue) -> Xmark
+        @ViewBuilder xmark: @escaping (TabValue) -> Xmark = { _ in EmptyView() }
     ) {
         self.content = content
         self.xmark = xmark
