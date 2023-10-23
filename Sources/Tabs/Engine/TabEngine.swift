@@ -10,6 +10,7 @@ public class TabEngine: ObservableObject {
     
     let staticLength: CGFloat?
     let spacing: CGFloat
+    let padding: CGFloat
 
     @Published var active: Bool = false
     @Published var id: UUID?
@@ -24,10 +25,11 @@ public class TabEngine: ObservableObject {
     
     @Published public var dynamicLengths: [UUID: CGFloat] = [:]
     
-    public init(axis: Axis, length: CGFloat? = nil, spacing: CGFloat = 0.0) {
+    public init(axis: Axis, length: CGFloat? = nil, spacing: CGFloat = 0.0, padding: CGFloat = 0.0) {
         self.axis = axis
         self.staticLength = length
         self.spacing = spacing
+        self.padding = padding
     }
     
     func length(at index: Int) -> CGFloat? {
@@ -43,7 +45,7 @@ public class TabEngine: ObservableObject {
     func lengths(below index: Int) -> CGFloat? {
         guard index >= 0
         else { return nil }
-        var lengths: CGFloat = 0.0
+        var lengths: CGFloat = padding
         for i in 0..<index {
             guard let length = length(at: i)
             else { return nil }
@@ -55,7 +57,7 @@ public class TabEngine: ObservableObject {
     func lengths(above index: Int) -> CGFloat? {
         guard index >= 0
         else { return nil }
-        var lengths: CGFloat = 0.0
+        var lengths: CGFloat = padding
         for i in 0...index {
             guard let length = length(at: i)
             else { return nil }

@@ -6,6 +6,8 @@ import SwiftUI
 
 public struct Tabs<Content: View, Xmark: View>: View {
     
+    let style: TabsStyle
+    
     let content: (TabValue) -> Content
     let xmark: (TabValue) -> Xmark
     
@@ -14,10 +16,6 @@ public struct Tabs<Content: View, Xmark: View>: View {
 
     let showClose: Bool
     let closeConfirmation: (UUID) async -> Bool
-    
-    let spacing: CGFloat
-    let width: CGFloat?
-    let height: CGFloat
         
     @StateObject private var tabEngine: TabEngine
     
@@ -30,28 +28,26 @@ public struct Tabs<Content: View, Xmark: View>: View {
     }()
     
     public init(
+        style: TabsStyle = TabsStyle(),
         openIDs: Binding<[UUID]>,
         activeID: Binding<UUID?>,
         showClose: Bool = true,
         closeConfirmation: @escaping (UUID) async -> Bool = { _ in true },
-        spacing: CGFloat = .tabSpacing,
-        width: CGFloat? = nil,
-        height: CGFloat = CGSize.tabSize.height,
-        xmarkColor: Color = .primary,
         @ViewBuilder content: @escaping (TabValue) -> Content,
         @ViewBuilder xmark: @escaping (TabValue) -> Xmark = { _ in EmptyView() }
     ) {
+        self.style = style
         self.content = content
         self.xmark = xmark
         _openIDs = openIDs
         _activeID = activeID
         self.showClose = showClose
         self.closeConfirmation = closeConfirmation
-        self.spacing = spacing
-        self.width = width
-        self.height = height
         _tabEngine = StateObject(wrappedValue: {
-            TabEngine(axis: .horizontal, length: width, spacing: spacing)
+            TabEngine(axis: .horizontal, 
+                      length: style.width, 
+                      spacing: style.spacing,
+                      padding: style.padding)
         }())
     }
     
@@ -61,7 +57,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 
-                HStack(spacing: spacing) {
+                HStack(spacing: style.spacing) {
                     
                     ForEach(openIDs, id: \.self) { id in
                         
@@ -75,8 +71,8 @@ public struct Tabs<Content: View, Xmark: View>: View {
                             index: index,
                             isActive: isActive,
                             isMoving: isMoving,
-                            width: width,
-                            height: height)
+                            width: style.width,
+                            height: style.height)
                         
                         ZStack(alignment: .leading) {
                             
@@ -105,20 +101,20 @@ public struct Tabs<Content: View, Xmark: View>: View {
                                 .aspectRatio(1.0, contentMode: .fit)
                             }
                         }
-                        .frame(width: width)
+                        .frame(width: style.width)
                         .background {
                             GeometryReader { geometry in
                                 Color.clear
                                     .onAppear {
-                                        guard width == nil else { return }
+                                        guard style.width == nil else { return }
                                         tabEngine.dynamicLengths[id] = geometry.size.width
                                     }
                                     .onChange(of: geometry.size) { size in
-                                        guard width == nil else { return }
+                                        guard style.width == nil else { return }
                                         tabEngine.dynamicLengths[id] = size.width
                                     }
                                     .onDisappear {
-                                        guard width == nil else { return }
+                                        guard style.width == nil else { return }
                                         tabEngine.dynamicLengths.removeValue(forKey: id)
                                     }
                             }
@@ -127,9 +123,16 @@ public struct Tabs<Content: View, Xmark: View>: View {
                         .id("tab-\(id.uuidString)")
                     }
                 }
+                .padding(.horizontal, style.padding)
             }
             .scrollDisabled(!gesture.canScroll)
             .onAppear {
+                guard gesture.canScroll else { return }
+                guard let id: UUID = activeID else { return }
+                proxy.scrollTo("tab-\(id.uuidString)")
+            }
+            .onChange(of: openIDs) { newOpenIDs in
+                guard newOpenIDs.count > openIDs.count else { return }
                 guard gesture.canScroll else { return }
                 guard let id: UUID = activeID else { return }
                 proxy.scrollTo("tab-\(id.uuidString)")
@@ -140,7 +143,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
 //                proxy.scrollTo("tab-\(id.uuidString)")
 //            }
         }
-        .frame(height: height)
+        .frame(height: style.height)
         .coordinateSpace(name: "tabs")
     }
     
