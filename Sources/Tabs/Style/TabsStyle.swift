@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 public struct TabsStyle {
     
@@ -13,14 +14,17 @@ public struct TabsStyle {
     let spacing: CGFloat
     let width: CGFloat?
     let height: CGFloat
+    let cornerRadii: RectangleCornerRadii
 
     public init(padding: CGFloat = 0.0,
                 spacing: CGFloat = .tabSpacing,
                 width: CGFloat? = nil,
-                height: CGFloat = CGSize.tabSize.height) {
+                height: CGFloat = CGSize.tabSize.height,
+                cornerRadii: RectangleCornerRadii = RectangleCornerRadii()) {
         self.padding = padding
         self.spacing = spacing
         self.width = width
         self.height = height
+        self.cornerRadii = cornerRadii
     }
 }

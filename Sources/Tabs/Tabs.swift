@@ -27,6 +27,8 @@ public struct Tabs<Content: View, Xmark: View>: View {
         #endif
     }()
     
+    @FocusState var focusedID: UUID?
+    
     public init(
         style: TabsStyle = TabsStyle(),
         openIDs: Binding<[UUID]>,
@@ -81,7 +83,11 @@ public struct Tabs<Content: View, Xmark: View>: View {
                                 activeID = id
                             } label: {
                                 content(tabValue)
+                                    .clipShape(.rect(cornerRadii: style.cornerRadii))
+                                    .contentShape(.rect(cornerRadii: style.cornerRadii))
+                                    .padding(.top, style.padding)
                             }
+                            .focused($focusedID, equals: id)
                             .buttonStyle(Tab(isFirst: isFirst))
                             .tabGesture(id: id, ids: openIDs, gesture: $gesture, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
                             
@@ -145,6 +151,12 @@ public struct Tabs<Content: View, Xmark: View>: View {
         }
         .frame(height: style.height)
         .coordinateSpace(name: "tabs")
+        .onAppear {
+            focusedID = activeID
+        }
+        .onChange(of: activeID) { newActiveID in
+            focusedID = newActiveID
+        }
     }
     
     private func move(from index: Int, to toIndex: Int) {
