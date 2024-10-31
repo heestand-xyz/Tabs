@@ -11,6 +11,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
     let content: (TabValue) -> Content
     let xmark: (TabValue) -> Xmark
     
+    let enabledIDs: [UUID]
     @Binding var openIDs: [UUID]
     @Binding var activeID: UUID?
 
@@ -30,7 +31,8 @@ public struct Tabs<Content: View, Xmark: View>: View {
     @FocusState var focusedID: UUID?
     
     public init(
-        style: TabsStyle = TabsStyle(),
+        style: TabsStyle = TabsStyle(shape: .rectangle),
+        enabledIDs: [UUID]? = nil,
         openIDs: Binding<[UUID]>,
         activeID: Binding<UUID?>,
         showClose: Bool = true,
@@ -41,6 +43,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
         self.style = style
         self.content = content
         self.xmark = xmark
+        self.enabledIDs = enabledIDs ?? openIDs.wrappedValue
         _openIDs = openIDs
         _activeID = activeID
         self.showClose = showClose
@@ -78,18 +81,25 @@ public struct Tabs<Content: View, Xmark: View>: View {
                         
                         ZStack(alignment: .leading) {
                             
-                            Button {
-                                if tabEngine.active { return }
-                                activeID = id
-                            } label: {
+                            if enabledIDs.contains(id) {
+                                Button {
+                                    if tabEngine.active { return }
+                                    activeID = id
+                                } label: {
+                                    content(tabValue)
+                                        .clipShape(style.shape.shape)
+                                        .contentShape(style.shape.shape)
+                                        .padding(.vertical, style.padding)
+                                }
+                                .focused($focusedID, equals: id)
+                                .buttonStyle(Tab(isFirst: isFirst))
+                                .tabGesture(id: id, ids: openIDs, gesture: $gesture, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
+                            } else {
                                 content(tabValue)
-                                    .clipShape(.rect(cornerRadii: style.cornerRadii))
-                                    .contentShape(.rect(cornerRadii: style.cornerRadii))
-                                    .padding(.top, style.padding)
+                                    .clipShape(style.shape.shape)
+                                    .contentShape(style.shape.shape)
+                                    .padding(.vertical, style.padding)
                             }
-                            .focused($focusedID, equals: id)
-                            .buttonStyle(Tab(isFirst: isFirst))
-                            .tabGesture(id: id, ids: openIDs, gesture: $gesture, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
                             
                             if showClose {
                                 
