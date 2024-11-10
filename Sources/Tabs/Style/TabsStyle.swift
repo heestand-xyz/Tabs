@@ -10,7 +10,7 @@ import SwiftUI
 
 public struct TabsStyle {
     
-    public let padding: CGFloat
+    public let padding: EdgeInsets
     public let spacing: CGFloat
     public let width: CGFloat?
     public let height: CGFloat
@@ -55,6 +55,20 @@ public struct TabsStyle {
     
     public init(
         padding: CGFloat = 0.0,
+        spacing: CGFloat = .tabSpacing,
+        width: CGFloat? = nil,
+        height: CGFloat = CGSize.tabSize.height,
+        shape: Shape
+    ) {
+        self.padding = EdgeInsets(top: padding, leading: padding, bottom: padding, trailing: padding)
+        self.spacing = spacing
+        self.width = width
+        self.height = height
+        self.shape = shape
+    }
+    
+    public init(
+        padding: EdgeInsets,
         spacing: CGFloat = .tabSpacing,
         width: CGFloat? = nil,
         height: CGFloat = CGSize.tabSize.height,

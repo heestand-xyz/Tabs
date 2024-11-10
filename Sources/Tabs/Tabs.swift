@@ -52,7 +52,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
             TabEngine(axis: .horizontal, 
                       length: style.width, 
                       spacing: style.spacing,
-                      padding: style.padding)
+                      padding: style.padding.leading)
         }())
     }
     
@@ -89,7 +89,8 @@ public struct Tabs<Content: View, Xmark: View>: View {
                                     content(tabValue)
                                         .clipShape(style.shape.shape)
                                         .contentShape(style.shape.shape)
-                                        .padding(.vertical, style.padding)
+                                        .padding(.top, style.padding.top)
+                                        .padding(.bottom, style.padding.bottom)
                                 }
                                 .focused($focusedID, equals: id)
                                 .buttonStyle(Tab(isFirst: isFirst))
@@ -98,7 +99,8 @@ public struct Tabs<Content: View, Xmark: View>: View {
                                 content(tabValue)
                                     .clipShape(style.shape.shape)
                                     .contentShape(style.shape.shape)
-                                    .padding(.vertical, style.padding)
+                                    .padding(.top, style.padding.top)
+                                    .padding(.bottom, style.padding.bottom)
                             }
                             
                             if showClose {
@@ -139,7 +141,8 @@ public struct Tabs<Content: View, Xmark: View>: View {
                         .id("tab-\(id.uuidString)")
                     }
                 }
-                .padding(.horizontal, style.padding)
+                .padding(.leading, style.padding.leading)
+                .padding(.trailing, style.padding.trailing)
             }
             .scrollDisabled(!gesture.canScroll)
             .onAppear {
