@@ -16,7 +16,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
     @Binding var activeID: UUID?
 
     let showClose: Bool
-    let closeConfirmation: (UUID) async -> Bool
+    let closeConfirmation: ((UUID) async -> Bool)?
         
     @StateObject private var tabEngine: TabEngine
     
@@ -36,7 +36,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
         openIDs: Binding<[UUID]>,
         activeID: Binding<UUID?>,
         showClose: Bool = true,
-        closeConfirmation: @escaping (UUID) async -> Bool = { _ in true },
+        closeConfirmation: ((UUID) async -> Bool)? = nil,
         @ViewBuilder content: @escaping (TabValue) -> Content,
         @ViewBuilder xmark: @escaping (TabValue) -> Xmark = { _ in EmptyView() }
     ) {
@@ -107,7 +107,18 @@ public struct Tabs<Content: View, Xmark: View>: View {
                                 
                                 Button {
                                     Task {
-                                        guard await closeConfirmation(id) else { return }
+                                        if let closeConfirmation {
+                                            guard await closeConfirmation(id) else { return }
+                                        } else {
+#if os(macOS)
+                                            if NSEvent.modifierFlags.contains(.option) {
+                                                await MainActor.run {
+                                                    closeAllOtherThan(id: id)
+                                                }
+                                                return
+                                            }
+#endif
+                                        }
                                         await MainActor.run {
                                             close(id: id)
                                         }
@@ -190,6 +201,15 @@ public struct Tabs<Content: View, Xmark: View>: View {
                     return openIDs.last
                 }
             }()
+        }
+    }
+    
+    private func closeAllOtherThan(id: UUID) {
+        
+        openIDs.removeAll(where: { $0 != id })
+        
+        if id != activeID {
+            activeID = openIDs.first
         }
     }
 }
