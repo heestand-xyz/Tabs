@@ -32,6 +32,7 @@ public struct Tabs<Content: View, Xmark: View>: View {
     
     public init(
         style: TabsStyle = TabsStyle(shape: .rectangle),
+        interaction: TabsInteraction = .default,
         enabledIDs: [UUID]? = nil,
         openIDs: Binding<[UUID]>,
         activeID: Binding<UUID?>,
@@ -49,10 +50,13 @@ public struct Tabs<Content: View, Xmark: View>: View {
         self.showClose = showClose
         self.closeConfirmation = closeConfirmation
         _tabEngine = StateObject(wrappedValue: {
-            TabEngine(axis: .horizontal, 
-                      length: style.width, 
-                      spacing: style.spacing,
-                      padding: style.padding.leading)
+            TabEngine(
+                interaction: interaction,
+                axis: .horizontal,
+                length: style.width,
+                spacing: style.spacing,
+                padding: style.padding.leading
+            )
         }())
     }
     
@@ -177,6 +181,9 @@ public struct Tabs<Content: View, Xmark: View>: View {
         .coordinateSpace(name: "tabs")
         .onAppear {
             focusedID = activeID
+            tabEngine.activateTabOnDrag = { id in
+                activeID = id
+            }
         }
         .onChange(of: activeID) { newActiveID in
             focusedID = newActiveID

@@ -6,6 +6,10 @@ import SwiftUI
 
 public class TabEngine: ObservableObject {
     
+    let interaction: TabsInteraction
+    /// Triggered when interaction is set to activate on drag.
+    public var activateTabOnDrag: ((UUID) -> Void)?
+    
     let axis: Axis
     
     let staticLength: CGFloat?
@@ -25,7 +29,17 @@ public class TabEngine: ObservableObject {
     
     @Published public var dynamicLengths: [UUID: CGFloat] = [:]
     
-    public init(axis: Axis, length: CGFloat? = nil, spacing: CGFloat = 0.0, padding: CGFloat = 0.0) {
+    /// Tab Engine
+    ///
+    /// Set `activateTabOnDrag` if using a non default `interaction`.
+    public init(
+        interaction: TabsInteraction = .default,
+        axis: Axis,
+        length: CGFloat? = nil,
+        spacing: CGFloat = 0.0,
+        padding: CGFloat = 0.0
+    ) {
+        self.interaction = interaction
         self.axis = axis
         self.staticLength = length
         self.spacing = spacing
@@ -110,6 +124,9 @@ public class TabEngine: ObservableObject {
             self.active = true
             self.id = id
             self.ids = ids
+            if interaction.dragActivation == .onBegin {
+                activateTabOnDrag?(id)
+            }
         }
         
         guard let value else { return }
@@ -163,6 +180,10 @@ public class TabEngine: ObservableObject {
         self.ids = []
         self.translation = 0.0
         self.shift = 0
+        
+        if interaction.dragActivation == .onEnd {
+            activateTabOnDrag?(id)
+        }
         
         DispatchQueue.main.asyncAfter(deadline: .now() + .milliseconds(1)) {
             guard self.index == nil
