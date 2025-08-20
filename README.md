@@ -74,6 +74,7 @@ struct ContentView: View {
                 .padding(4.0)
                 .foregroundStyle(tabValue.isActive ? .white : .primary)
         }
+        .padding(.vertical, .tabSpacing)
         .clipShape(.capsule)
         .background {
             Capsule()
@@ -101,7 +102,7 @@ struct MyTabView: View {
     
     private var background: some View {
         if tabValue.isActive {
-            Color.orange
+            Color.accentColor
         } else  {
             Color.primary
                 .opacity(0.1)
