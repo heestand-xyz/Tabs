@@ -2,7 +2,7 @@
 
 Tabs built in SwiftUI for iOS and macOS.
 
-![](https://github.com/heestand-xyz/Tabs/blob/main/Assets/Tabs.png?raw=true)
+![](https://github.com/heestand-xyz/Tabs/blob/main/Assets/Tabs.gif?raw=true)
 
 Move and close tabs in UI. Open tabs via binding. Style via content callback.
 
