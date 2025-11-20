@@ -35,6 +35,8 @@ public struct TabsStyle {
         }
     }
     let shape: Shape
+    
+    let clip: Bool
 
     @available(*, deprecated, renamed: "init(padding:spacing:width:height:shape:)")
     public init(
@@ -42,14 +44,16 @@ public struct TabsStyle {
         spacing: CGFloat = .tabSpacing,
         width: CGFloat? = nil,
         height: CGFloat = CGSize.tabSize.height,
-        cornerRadii: RectangleCornerRadii = RectangleCornerRadii()
+        cornerRadii: RectangleCornerRadii = RectangleCornerRadii(),
+        clip: Bool = true
     ) {
         self.init(
             padding: padding,
             spacing: spacing,
             width: width,
             height: height,
-            shape: .unevenRoundedRectangle(cornerRadii: cornerRadii)
+            shape: .unevenRoundedRectangle(cornerRadii: cornerRadii),
+            clip: clip
         )
     }
     
@@ -58,13 +62,15 @@ public struct TabsStyle {
         spacing: CGFloat = .tabSpacing,
         width: CGFloat? = nil,
         height: CGFloat = CGSize.tabSize.height,
-        shape: Shape
+        shape: Shape,
+        clip: Bool = true
     ) {
         self.padding = EdgeInsets(top: padding, leading: padding, bottom: padding, trailing: padding)
         self.spacing = spacing
         self.width = width
         self.height = height
         self.shape = shape
+        self.clip = clip
     }
     
     public init(
@@ -72,12 +78,14 @@ public struct TabsStyle {
         spacing: CGFloat = .tabSpacing,
         width: CGFloat? = nil,
         height: CGFloat = CGSize.tabSize.height,
-        shape: Shape
+        shape: Shape,
+        clip: Bool = true
     ) {
         self.padding = padding
         self.spacing = spacing
         self.width = width
         self.height = height
         self.shape = shape
+        self.clip = clip
     }
 }

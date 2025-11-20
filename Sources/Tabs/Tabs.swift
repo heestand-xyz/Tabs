@@ -90,21 +90,33 @@ public struct Tabs<Content: View, Xmark: View>: View {
                                     if tabEngine.active { return }
                                     activeID = id
                                 } label: {
-                                    content(tabValue)
-                                        .clipShape(style.shape.shape)
-                                        .contentShape(style.shape.shape)
-                                        .padding(.top, style.padding.top)
-                                        .padding(.bottom, style.padding.bottom)
+                                    Group {
+                                        if style.clip {
+                                            content(tabValue)
+                                                .clipShape(style.shape.shape)
+                                        } else {
+                                            content(tabValue)
+                                        }
+                                    }
+                                    .contentShape(style.shape.shape)
+                                    .padding(.top, style.padding.top)
+                                    .padding(.bottom, style.padding.bottom)
                                 }
                                 .focused($focusedID, equals: id)
                                 .buttonStyle(Tab(isFirst: isFirst))
                                 .tabGesture(id: id, ids: openIDs, gesture: $gesture, engine: tabEngine, coordinateSpace: .named("tabs"), move: move)
                             } else {
-                                content(tabValue)
-                                    .clipShape(style.shape.shape)
-                                    .contentShape(style.shape.shape)
-                                    .padding(.top, style.padding.top)
-                                    .padding(.bottom, style.padding.bottom)
+                                Group {
+                                    if style.clip {
+                                        content(tabValue)
+                                            .clipShape(style.shape.shape)
+                                    } else {
+                                        content(tabValue)
+                                    }
+                                }
+                                .contentShape(style.shape.shape)
+                                .padding(.top, style.padding.top)
+                                .padding(.bottom, style.padding.bottom)
                             }
                             
                             if showClose {
