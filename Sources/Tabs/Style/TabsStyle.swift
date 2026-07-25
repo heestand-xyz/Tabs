@@ -14,6 +14,7 @@ public struct TabsStyle {
     public let spacing: CGFloat
     public let width: CGFloat?
     public let height: CGFloat
+    public let glass: Bool
     
     public enum Shape {
         case rectangle
@@ -63,7 +64,8 @@ public struct TabsStyle {
         width: CGFloat? = nil,
         height: CGFloat = CGSize.tabSize.height,
         shape: Shape,
-        clip: Bool = true
+        clip: Bool = true,
+        glass: Bool = false
     ) {
         self.padding = EdgeInsets(top: padding, leading: padding, bottom: padding, trailing: padding)
         self.spacing = spacing
@@ -71,6 +73,7 @@ public struct TabsStyle {
         self.height = height
         self.shape = shape
         self.clip = clip
+        self.glass = glass
     }
     
     public init(
@@ -79,7 +82,8 @@ public struct TabsStyle {
         width: CGFloat? = nil,
         height: CGFloat = CGSize.tabSize.height,
         shape: Shape,
-        clip: Bool = true
+        clip: Bool = true,
+        glass: Bool = false
     ) {
         self.padding = padding
         self.spacing = spacing
@@ -87,5 +91,6 @@ public struct TabsStyle {
         self.height = height
         self.shape = shape
         self.clip = clip
+        self.glass = glass
     }
 }

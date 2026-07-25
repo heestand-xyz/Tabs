@@ -91,7 +91,21 @@ public struct Tabs<Content: View, Xmark: View>: View {
                                     activeID = id
                                 } label: {
                                     Group {
-                                        if style.clip {
+                                        if style.glass {
+#if !os(visionOS)
+                                            if #available(iOS 26.0, macOS 26.0, *) {
+                                                content(tabValue)
+                                                    .clipShape(style.shape.shape)
+                                                    .glassEffect(.regular, in: style.shape.shape)
+                                            } else {
+                                                content(tabValue)
+                                                    .clipShape(style.shape.shape)
+                                            }
+#else
+                                            content(tabValue)
+                                                .clipShape(style.shape.shape)
+#endif
+                                        } else if style.clip {
                                             content(tabValue)
                                                 .clipShape(style.shape.shape)
                                         } else {
