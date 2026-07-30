@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MultiViews
 
 private struct TabLongPressDragEnabledKey: EnvironmentKey {
     static let defaultValue: Bool = false
@@ -61,39 +62,23 @@ private struct TabGestureModifier: ViewModifier {
     let coordinateSpace: CoordinateSpace
     let move: (Int, Int) -> Void
 
-    @State private var sequencedDragIsActive: Bool = false
-    @GestureState private var sequencedGestureIsRecognized: Bool = false
-
     @ViewBuilder
     func body(content: Content) -> some View {
-#if os(iOS)
         if longPressDragEnabled {
-            if #available(iOS 18.0, *) {
-                content
-                    .gesture(
-                        TabLongPressDragGesture(
-                            isEnabled: true,
-                            onActivated: activateLongPressDrag,
-                            onChanged: updateLongPressDrag(translation:),
-                            onEnded: endLongPressDrag
-                        )
-                    )
-            } else {
-                sequencedTouchBody(content: content)
-            }
+            content
+                .longPressDrag(
+                    onStart: activateLongPressDrag,
+                    onUpdate: updateLongPressDrag(translation:),
+                    onEnd: endLongPressDrag(translation:)
+                )
         } else {
+#if os(iOS) || os(visionOS)
             legacyTouchBody(content: content)
-        }
-#elseif os(visionOS)
-        if longPressDragEnabled {
-            sequencedTouchBody(content: content)
-        } else {
-            legacyTouchBody(content: content)
-        }
 #else
-        content
-            .simultaneousGesture(legacyDragGesture)
+            content
+                .simultaneousGesture(legacyDragGesture)
 #endif
+        }
     }
 
 #if os(iOS) || os(visionOS)
@@ -115,15 +100,6 @@ private struct TabGestureModifier: ViewModifier {
             }
             .simultaneousGesture(legacyDragGesture)
     }
-
-    private func sequencedTouchBody(content: Content) -> some View {
-        content
-            .simultaneousGesture(sequencedDragGesture)
-            .onChange(of: sequencedGestureIsRecognized) { isRecognized in
-                guard !isRecognized, sequencedDragIsActive else { return }
-                endSequencedDrag()
-            }
-    }
 #endif
 
     private var legacyDragGesture: some Gesture {
@@ -142,54 +118,6 @@ private struct TabGestureModifier: ViewModifier {
             }
     }
 
-    private var sequencedDragGesture: some Gesture {
-        LongPressGesture(minimumDuration: 0.5)
-            .sequenced(
-                before: DragGesture(
-                    minimumDistance: 0.0,
-                    coordinateSpace: coordinateSpace
-                )
-            )
-            .updating($sequencedGestureIsRecognized) { value, isRecognized, _ in
-                switch value {
-                case .first(true), .second(true, _):
-                    isRecognized = true
-                default:
-                    break
-                }
-            }
-            .onChanged { value in
-                switch value {
-                case .first(true):
-                    activateSequencedDragIfNeeded()
-                case .second(true, let dragValue):
-                    activateSequencedDragIfNeeded()
-                    guard let dragValue else { return }
-                    engine.onChanged(id: id, ids: ids, translation: dragValue.translation)
-                default:
-                    break
-                }
-            }
-            .onEnded { _ in
-                endSequencedDrag()
-            }
-    }
-
-    private func activateSequencedDragIfNeeded() {
-        guard !sequencedDragIsActive else { return }
-        sequencedDragIsActive = true
-        gesture = .drag
-        engine.onChanged(id: id, ids: ids, translation: nil)
-    }
-
-    private func endSequencedDrag() {
-        guard sequencedDragIsActive else { return }
-        engine.onEnded(id: id, ids: ids, move: move)
-        sequencedDragIsActive = false
-        gesture = .scroll
-    }
-
-#if os(iOS)
     private func activateLongPressDrag() {
         gesture = .auto
         engine.onChanged(id: id, ids: ids, translation: nil)
@@ -199,9 +127,13 @@ private struct TabGestureModifier: ViewModifier {
         engine.onChanged(id: id, ids: ids, translation: translation)
     }
 
-    private func endLongPressDrag() {
+    private func endLongPressDrag(translation: CGSize?) {
+        if let translation {
+            engine.onChanged(id: id, ids: ids, translation: translation)
+        }
         engine.onEnded(id: id, ids: ids, move: move)
+#if os(iOS) || os(visionOS)
         gesture = .scroll
-    }
 #endif
+    }
 }
