@@ -25,13 +25,13 @@ extension View {
         environment(\.tabLongPressDragEnabled, enabled)
     }
 
-    public func tab(id: UUID, ids: [UUID], gesture: Binding<TabGesture> = .constant(.auto), engine: TabEngine, coordinateSpace: CoordinateSpace, move: @escaping (Int, Int) -> ()) -> some View {
+    public func tab<Space: CoordinateSpaceProtocol>(id: UUID, ids: [UUID], gesture: Binding<TabGesture> = .constant(.auto), engine: TabEngine, coordinateSpace: Space, move: @escaping (Int, Int) -> ()) -> some View {
         self
             .tabGesture(id: id, ids: ids, gesture: gesture, engine: engine, coordinateSpace: coordinateSpace, move: move)
             .tabTransform(id: id, engine: engine)
     }
     
-    public func tabGesture(id: UUID, ids: [UUID], gesture: Binding<TabGesture> = .constant(.auto), engine: TabEngine, coordinateSpace: CoordinateSpace, move: @escaping (Int, Int) -> ()) -> some View {
+    public func tabGesture<Space: CoordinateSpaceProtocol>(id: UUID, ids: [UUID], gesture: Binding<TabGesture> = .constant(.auto), engine: TabEngine, coordinateSpace: Space, move: @escaping (Int, Int) -> ()) -> some View {
         modifier(
             TabGestureModifier(
                 id: id,
@@ -51,7 +51,7 @@ extension View {
     }
 }
 
-private struct TabGestureModifier: ViewModifier {
+private struct TabGestureModifier<Space: CoordinateSpaceProtocol>: ViewModifier {
 
     @Environment(\.tabLongPressDragEnabled) private var longPressDragEnabled
 
@@ -59,7 +59,7 @@ private struct TabGestureModifier: ViewModifier {
     let ids: [UUID]
     @Binding var gesture: TabGesture
     let engine: TabEngine
-    let coordinateSpace: CoordinateSpace
+    let coordinateSpace: Space
     let move: (Int, Int) -> Void
 
     @ViewBuilder
@@ -67,6 +67,7 @@ private struct TabGestureModifier: ViewModifier {
         if longPressDragEnabled {
             content
                 .longPressDrag(
+                    coordinateSpace: coordinateSpace,
                     onStart: activateLongPressDrag,
                     onUpdate: updateLongPressDrag(translation:),
                     onEnd: endLongPressDrag(translation:)
