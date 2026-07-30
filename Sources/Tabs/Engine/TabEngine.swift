@@ -116,7 +116,7 @@ public class TabEngine: ObservableObject {
         }
     }
     
-    func onChanged(id: UUID, ids: [UUID], value: DragGesture.Value?) {
+    func onChanged(id: UUID, ids: [UUID], translation dragTranslation: CGSize?) {
         
         let index = ids.firstIndex(of: id) ?? 0
         
@@ -129,13 +129,13 @@ public class TabEngine: ObservableObject {
             }
         }
         
-        guard let value else { return }
+        guard let dragTranslation else { return }
         
         switch axis {
         case .horizontal:
-            translation = value.translation.width
+            translation = dragTranslation.width
         case .vertical:
-            translation = value.translation.height
+            translation = dragTranslation.height
         }
 
         guard let indexLength = lengths(centerdAt: index)
