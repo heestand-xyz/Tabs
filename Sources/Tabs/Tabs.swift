@@ -112,6 +112,9 @@ public struct Tabs<Content: View, Xmark: View>: View {
                                             content(tabValue)
                                         }
                                     }
+                                    .overlay {
+                                        movingHighlight(isMoving: isMoving)
+                                    }
                                     .contentShape(style.shape.shape)
                                     .padding(.top, style.padding.top)
                                     .padding(.bottom, style.padding.bottom)
@@ -216,6 +219,16 @@ public struct Tabs<Content: View, Xmark: View>: View {
         }
     }
     
+    /// Tints a tab while it is picked up, from the moment the long press
+    /// lands until the drag ends.
+    private func movingHighlight(isMoving: Bool) -> some View {
+        style.shape.shape
+            .fill(Color.accentColor.opacity(.tabMovingHighlightOpacity))
+            .opacity(isMoving ? 1.0 : 0.0)
+            .animation(.easeOut(duration: 0.15), value: isMoving)
+            .allowsHitTesting(false)
+    }
+
     private func move(from index: Int, to toIndex: Int) {
         openIDs.move(fromOffsets: [index], toOffset: toIndex)
     }

@@ -14,6 +14,12 @@ extension CGFloat {
     }
 }
 
+extension Double {
+
+    /// Default at 0.25
+    public static let tabMovingHighlightOpacity: Double = 0.25
+}
+
 extension CGSize {
     
     /// Default width at 150 and height at 25 on macOS and 30 on iOS

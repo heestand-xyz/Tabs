@@ -120,6 +120,9 @@ private struct TabGestureModifier<Space: CoordinateSpaceProtocol>: ViewModifier 
     }
 
     private func activateLongPressDrag() {
+        // Stays scrollable. The long press already made the scroll view's pan
+        // fail for this touch, and disabling the scroll view mid gesture
+        // reconfigures it under the drag, which cancels the drag.
         gesture = .auto
         engine.onChanged(id: id, ids: ids, translation: nil)
     }
