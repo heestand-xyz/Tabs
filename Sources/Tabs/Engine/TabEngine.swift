@@ -80,7 +80,7 @@ public class TabEngine: ObservableObject {
         return lengths
     }
     
-    func lengths(centerdAt index: Int) -> CGFloat? {
+    func lengths(centeredAt index: Int) -> CGFloat? {
         guard let lengths = lengths(below: index),
               let length = length(at: index)
         else { return nil }
@@ -138,7 +138,7 @@ public class TabEngine: ObservableObject {
             translation = dragTranslation.height
         }
 
-        guard let indexLength = lengths(centerdAt: index)
+        guard let indexLength = lengths(centeredAt: index)
         else { return }
         
         let currentLengths: CGFloat = indexLength + translation
