@@ -26,6 +26,20 @@ public class TabEngine: ObservableObject {
     }
     @Published private var translation: CGFloat = 0.0
     @Published private var shift: Int = 0
+
+    /// The order that would be committed if the active drag ended now.
+    public var dragOrderedIDs: [UUID]? {
+        guard let index else { return nil }
+        var orderedIDs = ids
+        if shift != 0 {
+            var destination = min(max(index + shift, 0), ids.count - 1)
+            if destination > index {
+                destination += 1
+            }
+            orderedIDs.move(fromOffsets: [index], toOffset: destination)
+        }
+        return orderedIDs
+    }
     
     @Published public var dynamicLengths: [UUID: CGFloat] = [:]
     
