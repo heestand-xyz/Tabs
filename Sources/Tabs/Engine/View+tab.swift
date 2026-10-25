@@ -111,7 +111,10 @@ private struct TabGestureModifier<Space: CoordinateSpaceProtocol>: ViewModifier 
 #endif
                 engine.onChanged(id: id, ids: ids, translation: value.translation)
             }
-            .onEnded { _ in
+            .onEnded { value in
+                if gesture.canDrag {
+                    engine.onChanged(id: id, ids: ids, translation: value.translation)
+                }
                 engine.onEnded(id: id, ids: ids, move: move)
 #if os(iOS) || os(visionOS)
                 gesture = .scroll
